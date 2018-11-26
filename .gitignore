@@ -6,6 +6,12 @@
 build/
 DerivedData/
 
+Packages
+.build
+.DS_Store
+*.xcodeproj
+Package.resolved
+
 ## Various settings
 *.pbxuser
 !default.pbxuser
