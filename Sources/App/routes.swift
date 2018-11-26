@@ -1,4 +1,6 @@
+import Routing
 import Vapor
+import Fluent
 
 /// Register your application's routes here.
 public func routes(_ router: Router) throws {
@@ -45,7 +47,9 @@ public func routes(_ router: Router) throws {
     }
     
     router.delete("api", "acronyms", Acronym.parameter) { req -> Future<HTTPStatus> in
-        return try req.parameters.next(Acronym.self)
+        return try req
+            .parameters
+            .next(Acronym.self)
             .delete(on: req)
             .transform(to: HTTPStatus.noContent)
     }
@@ -64,24 +68,22 @@ public func routes(_ router: Router) throws {
     }
     
     router.get("api", "acronyms", "sorted") { req -> Future<[Acronym]> in
-        return Acronym.query(on: req).sort(\.short, .ascending).all()
+        return Acronym
+            .query(on: req)
+            .sort(\.short, .ascending)
+            .all()
     }
     
-//    router.get("api", "acronyms", "search") { req -> Future<[Acronym]> in
-//        guard let searchTerm = req.query[String.self, at: "term"] else {
-//            throw Abort(.badRequest)
-//        }
-//        return Acronym.query(on: req).group(.or) { or in
-//            or.filter(\Acronym.short == searchTerm)
-//            or.filter(\Acronym.long == searchTerm)
-//            }.all()
-//    }
-    
-//    router.get("api", "acronyms", "search") { req -> Future<[Acronym]> in
-//        guard let searchTerm = req.query[String.self, at: "term"] else {
-//            throw Abort(.badRequest)
-//        }
-//
-//        return Acronym.query(on: req).filter(\Acronym.short, .equeal, searchTerm).all()
-//    }
+    router.get("api", "acronyms", "search") { req -> Future<[Acronym]> in
+        guard let searchTerm = req.query[String.self, at: "term"] else {
+            throw Abort(.badRequest)
+        }
+        
+        return Acronym
+            .query(on: req)
+            .group(.or) { or in
+                or.filter(\Acronym.short == searchTerm)
+                or.filter(\Acronym.long == searchTerm)
+            }.all()
+    }
 }
