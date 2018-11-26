@@ -3,87 +3,15 @@ import Vapor
 import Fluent
 
 /// Register your application's routes here.
+///
+/// [Learn More →](https://docs.vapor.codes/3.0/getting-started/structure/#routesswift)
 public func routes(_ router: Router) throws {
-    // Basic "It works" example
-    router.get { req in
-        return "It works!"
-    }
-    
     // Basic "Hello, world!" example
     router.get("hello") { req in
         return "Hello, world!"
     }
     
-    router.post("api", "acronyms") { (req: Request) -> Future<Acronym> in
-        return try req
-            .content
-            .decode(Acronym.self)
-            .flatMap(to: Acronym.self, { acronym in
-                return acronym.save(on: req)
-            })
-    }
+    let acronymsController = AcronymsController()
+    try router.register(collection: acronymsController)
     
-    router.get("api", "acronyms") { req -> Future<[Acronym]> in
-        return Acronym
-            .query(on: req)
-            .all()
-    }
-    
-    router.get("api", "acronyms", Acronym.parameter) { req -> Future<Acronym> in
-        return try req.parameters.next(Acronym.self)
-    }
-    
-    router.put("api", "acronyms", Acronym.parameter) { req -> Future<Acronym>  in
-        return try
-            flatMap(to: Acronym.self,
-                    req.parameters.next(Acronym.self),
-                    req.content.decode(Acronym.self)) { acronym, updateAcronym in
-                        
-                        acronym.short = updateAcronym.short
-                        acronym.long = updateAcronym.long
-                        
-                        return acronym.save(on: req)
-        }
-    }
-    
-    router.delete("api", "acronyms", Acronym.parameter) { req -> Future<HTTPStatus> in
-        return try req
-            .parameters
-            .next(Acronym.self)
-            .delete(on: req)
-            .transform(to: HTTPStatus.noContent)
-    }
-    
-    router.get("api", "acronyms", "first") { req -> Future<Acronym> in
-        return Acronym.query(on: req)
-            .first()
-            .map(to: Acronym.self) { acronym in
-                
-                guard let acronym = acronym else {
-                    throw Abort(.notFound)
-                }
-                
-                return acronym
-        }
-    }
-    
-    router.get("api", "acronyms", "sorted") { req -> Future<[Acronym]> in
-        return Acronym
-            .query(on: req)
-            .sort(\.short, .ascending)
-            .all()
-    }
-    
-    router.get("api", "acronyms", "search") { req -> Future<[Acronym]> in
-        guard let searchTerm = req.query[String.self, at: "term"] else {
-            throw Abort(.badRequest)
-        }
-        
-        return Acronym
-            .query(on: req)
-            .group(.or) { or in
-                or.filter(\Acronym.short == searchTerm)
-                or.filter(\Acronym.long == searchTerm)
-            }.all()
-    }
 }
