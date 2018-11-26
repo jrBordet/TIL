@@ -1,0 +1,4 @@
+module CNIOOpenSSL {
+    umbrella "/Users/jeanraphaelbordet/Development/Vapor/TILApp/.build/checkouts/swift-nio-ssl.git-1898238283940817731/Sources/CNIOOpenSSL/include"
+    export *
+}
